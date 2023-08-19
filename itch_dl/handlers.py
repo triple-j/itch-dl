@@ -13,27 +13,33 @@ from .config import Settings
 
 
 def get_jobs_for_game_jam_json(game_jam_json: dict) -> List[str]:
-    if 'jam_games' not in game_jam_json:
+    if "jam_games" not in game_jam_json:
         raise Exception("Provided JSON is not a valid itch.io jam JSON.")
 
-    return [g['game']['url'] for g in game_jam_json['jam_games']]
+    return [g["game"]["url"] for g in game_jam_json["jam_games"]]
 
 
 def get_game_jam_json(jam_url: str, client: ItchApiClient) -> dict:
     r = client.get(jam_url)
     if not r.ok:
-        raise ItchDownloadError(f"Could not download the game jam site: {r.status_code} {r.reason}")
+        raise ItchDownloadError(
+            f"Could not download the game jam site: {r.status_code} {r.reason}"
+        )
 
     jam_id: Optional[int] = get_int_after_marker_in_json(r.text, "I.ViewJam", "id")
     if jam_id is None:
-        raise ItchDownloadError("Provided site did not contain the Game Jam ID. Provide "
-                                "the path to the game jam entries JSON file instead, or "
-                                "create an itch-dl issue with the Game Jam URL.")
+        raise ItchDownloadError(
+            "Provided site did not contain the Game Jam ID. Provide "
+            "the path to the game jam entries JSON file instead, or "
+            "create an itch-dl issue with the Game Jam URL."
+        )
 
     logging.info(f"Extracted Game Jam ID: {jam_id}")
     r = client.get(f"{ITCH_URL}/jam/{jam_id}/entries.json")
     if not r.ok:
-        raise ItchDownloadError(f"Could not download the game jam entries list: {r.status_code} {r.reason}")
+        raise ItchDownloadError(
+            f"Could not download the game jam entries list: {r.status_code} {r.reason}"
+        )
 
     return r.json()
 
@@ -90,14 +96,18 @@ def get_jobs_for_itch_url(url: str, client: ItchApiClient) -> List[str]:
 
     if url.startswith(f"https://www.{ITCH_BASE}/"):
         logging.info(f"Correcting www.{ITCH_BASE} to {ITCH_BASE}")
-        url = ITCH_URL + '/' + url[20:]
+        url = ITCH_URL + "/" + url[20:]
 
     url_parts = urllib.parse.urlparse(url)
-    url_path_parts: List[str] = [x for x in str(url_parts.path).split('/') if len(x) > 0]
+    url_path_parts: List[str] = [
+        x for x in str(url_parts.path).split("/") if len(x) > 0
+    ]
 
     if url_parts.netloc == ITCH_BASE:
         if len(url_path_parts) == 0:
-            raise NotImplementedError("itch-dl cannot download the entirety of itch.io.")
+            raise NotImplementedError(
+                "itch-dl cannot download the entirety of itch.io."
+            )
         # (yet) (also leafo would not be happy with the bandwidth bill)
 
         site = url_path_parts[0]
@@ -112,7 +122,7 @@ def get_jobs_for_itch_url(url: str, client: ItchApiClient) -> List[str]:
             return get_jobs_for_game_jam_json(game_jam_json)
 
         elif site in ITCH_BROWSER_TYPES:  # Browser
-            clean_browse_url = '/'.join([ITCH_URL, *url_path_parts])
+            clean_browse_url = "/".join([ITCH_URL, *url_path_parts])
             return get_jobs_for_browse_url(clean_browse_url, client)
 
         elif site in ("b", "bundle"):  # Bundles
@@ -133,7 +143,9 @@ def get_jobs_for_itch_url(url: str, client: ItchApiClient) -> List[str]:
             raise ValueError("itch-dl expects a username in profile links.")
 
         # Something else?
-        raise NotImplementedError(f"itch-dl does not understand \"{site}\" URLs. Please file a new issue.")
+        raise NotImplementedError(
+            f'itch-dl does not understand "{site}" URLs. Please file a new issue.'
+        )
 
     elif url_parts.netloc.endswith(f".{ITCH_BASE}"):
         if len(url_path_parts) == 0:  # Author
@@ -156,7 +168,7 @@ def get_jobs_for_path(path: str) -> List[str]:
         if not isinstance(json_data, dict):
             raise ValueError(f"File does not contain a JSON dict: {path}")
 
-        if 'jam_games' in json_data:
+        if "jam_games" in json_data:
             logging.info("Parsing provided file as a Game Jam Entries JSON...")
             return get_jobs_for_game_jam_json(json_data)
     except json.JSONDecodeError:

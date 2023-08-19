@@ -16,13 +16,13 @@ def get_download_keys(client: ItchApiClient) -> Dict[int, str]:
             break
 
         data = r.json()
-        if 'owned_keys' not in data:
+        if "owned_keys" not in data:
             break  # Assuming we're out of keys already...
 
-        for key in data['owned_keys']:
-            download_keys[key['game_id']] = key['id']
+        for key in data["owned_keys"]:
+            download_keys[key["game_id"]] = key["id"]
 
-        if len(data['owned_keys']) == data['per_page']:
+        if len(data["owned_keys"]) == data["per_page"]:
             page += 1
         else:
             break
