@@ -46,3 +46,33 @@ create an issue!)
 - (It you found it multiple times, grab the one after I.ViewJam something something.)
 - Download https://itch.io/jam/ID/entries.json (replacing ID with what you wrote down).
 - Feed that to `itch-dl`!
+
+## Contributing
+
+### Local development
+
+This project is developed using Poetry. Refer to the [documentation][poetry-docs] to install
+Poetry in your local environment.
+
+[poetry-docs]: https://python-poetry.org/docs/
+
+You should first fork this repository and then clone it locally, so that you can make pull
+requests against the project.
+
+Next, you should install Poetry’s dependencies:
+
+```sh
+poetry install
+```
+
+You can run the code through Poetry using the following command:
+
+```sh
+poetry run itch-dl
+```
+
+Before you contribute, run your changes through the code formatter:
+
+```sh
+poetry run black .
+```
