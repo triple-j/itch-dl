@@ -195,11 +195,12 @@ class GameDownloader:
                 r.raise_for_status()
 
                 if download_path is not None:  # ...and it will be for external downloads.
-                    with tqdm.wrapattr(open(download_path, "wb"), "write",
+                    with tqdm.wrapattr(open(f"{download_path}.part", "wb"), "write",
                                        miniters=1, desc=url,
                                        total=int(r.headers.get('content-length', 0))) as f:
                         for chunk in r.iter_content(chunk_size=1048576):  # 1MB chunks
                             f.write(chunk)
+                    os.rename(f"{download_path}.part", download_path)
 
                 return r.url
         except HTTPError as e:
