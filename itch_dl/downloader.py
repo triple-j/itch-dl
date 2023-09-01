@@ -12,7 +12,7 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import thread_map
 
 from .api import ItchApiClient
-from .utils import ItchDownloadError, get_int_after_marker_in_json
+from .utils import ItchDownloadError, get_int_after_marker_in_json, md5sum
 from .consts import ITCH_GAME_URL_REGEX
 from .config import Settings
 from .infobox import parse_infobox, InfoboxMetadata
@@ -266,6 +266,7 @@ class GameDownloader:
                 upload_id = upload['id']
                 file_name = upload['filename']
                 file_size = upload.get('size')
+                md5_hash = upload.get('md5_hash')
                 upload_is_external = upload['storage'] == 'external'
 
                 logging.debug("Downloading '%s' (%d), %s",
@@ -283,6 +284,13 @@ class GameDownloader:
                 if upload_is_external:
                     logging.debug("Found external download URL for %s: %s", target_url)
                     external_urls.append(target_url)
+
+                if md5_hash is not None and target_path is not None:
+                    with open(f"{target_path}.md5", 'w', encoding='utf-8') as f:
+                        f.write(f"{md5_hash} {file_name}")
+                    file_md5 = md5sum(target_path)
+                    if file_md5 != md5_hash:
+                        errors.append(f"MD5 hash is {file_md5}, expected {md5_hash} for upload {upload}")
 
                 try:
                     downloaded_file_size = os.stat(target_path).st_size

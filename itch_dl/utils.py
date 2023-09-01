@@ -1,3 +1,4 @@
+import hashlib
 import re
 from typing import Optional
 
@@ -32,3 +33,12 @@ def get_int_after_marker_in_json(text: str, marker: str, key: str) -> Optional[i
         return None
 
     return int(found_ints[0])
+
+
+def md5sum(path: str) -> str:
+    """Returns the md5sum of a file"""
+    md5 = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            md5.update(chunk)
+    return md5.hexdigest()
